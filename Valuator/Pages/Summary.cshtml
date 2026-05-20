@@ -2,5 +2,14 @@
 @model Valuator.Pages.SummaryModel
 @{
 }
-<p id="rank">Оценка содержания: @Model.Rank</p>
+
+@if (Model.IsRankCalculated)
+{
+    <p id="rank">Оценка содержания: @Model.Rank</p>
+}
+else
+{
+    <p id="rank-waiting">Идет расчет ранга...</p>
+}
+
 <p id="similarity">Плагиат: @Model.Similarity</p>

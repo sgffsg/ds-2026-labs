@@ -17,6 +17,7 @@ public class SummaryModel : PageModel
     }
 
     public double Rank { get; set; }
+    public bool IsRankCalculated { get; set; }
     public double Similarity { get; set; }
 
     public IActionResult OnGet(string id)
@@ -30,7 +31,6 @@ public class SummaryModel : PageModel
         }
 
         string shardKey = _db.Get("MAIN", id);
-
         string[] values = _db.Get(shardKey, [$"RANK-{id}", $"SIMILARITY-{id}", id]);
 
         if (usernameActual != values[2])
@@ -38,9 +38,14 @@ public class SummaryModel : PageModel
             return Redirect("index");
         }
 
-        if (double.TryParse(values[0], out double rank))
+        if (!string.IsNullOrWhiteSpace(values[0]) && double.TryParse(values[0], out double rank))
         {
             Rank = rank;
+            IsRankCalculated = true;
+        }
+        else
+        {
+            IsRankCalculated = false;
         }
 
         if (double.TryParse(values[1], out double similarity))
