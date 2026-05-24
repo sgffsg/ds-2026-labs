@@ -1,11 +1,13 @@
 using DatabaseService;
 using MessageBroker;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using StackExchange.Redis;
 
 namespace Valuator.Pages;
 
+[AllowAnonymous]
 public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;
@@ -41,11 +43,10 @@ public class IndexModel : PageModel
             return Redirect("index");
         }
 
-        string username = User.Identity.Name;
-
-        if (string.IsNullOrWhiteSpace(username))
+        if (!User.Identity.IsAuthenticated)
         {
-            return Redirect("login");
+            _logger.LogWarning("Unauthorized attempt to post text");
+            return RedirectToPage("/Login", new { returnUrl = Request.Path });
         }
 
         string id = Guid.NewGuid().ToString();
@@ -60,7 +61,7 @@ public class IndexModel : PageModel
 
         _db.Set("MAIN", id, region);
         _db.Set(region, [
-            new(id, username),
+            new(id, User.Identity.Name),
             new(textKey, text),
             new(similarityKey, similarity.ToString()),
         ]);
